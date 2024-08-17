@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "date": "2024-01-01",
+    "time": "00:00:00",
+    "data": {
+      "temperature": 20,
+      "humidity": 50,
+      "pressure": 1013,
+      "co2": 400,
+      "co": 0.1
+    },
+    "location": {
+      "latitude": 21.01853551557444,
+      "longitude": 105.79870322339669
+    }
+  },
+  {
+    "id": 2,
+    "date": "2024-01-01",
+    "time": "00:01:00",
+    "data": {
+      "temperature": 20,
+      "humidity": 50,
+      "pressure": 1013,
+      "co2": 400,
+      "co": 0.1
+    },
+    "location": {
+      "latitude": 21.01853551557444,
+      "longitude": 105.79870322339669
+    }
+  }
+]
