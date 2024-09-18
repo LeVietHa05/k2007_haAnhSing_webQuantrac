@@ -138,137 +138,120 @@
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
   </script>
-  <!-- mapbox -->
+  <!-- code -->
   <script>
-    mapboxgl.accessToken =
-      'pk.eyJ1Ijoib2N0b2JvdDEyMyIsImEiOiJjbDM4azYzZnUwMG4zM2psNzA0bDc3NHphIn0.CufIKD4eMfY8zxV8r-ApFg';
-    const map = new mapboxgl.Map({
-      container: 'map', // container ID
-      center: [-74.5, 40], // starting position [lng, lat]. Note that lat must be set between -90 and 90
-      zoom: 9 // starting zoom
-    });
-  </script>
-  <!-- openweather -->
-  <script>
-    // let api = "https://api.openweathermap.org/data/2.5/forecast?lat=21.03&lon=105.78&appid=9396f69fee320a0014ac3fa7ab35381d"
-    // fetch (api)
-    // .then(res => res.json())
-    // .then(data => {
-    //   console.log(data)
-    // })
-  </script>
-  <script>
+    // openweather data
+    let apiForecast = "https://api.openweathermap.org/data/2.5/forecast?lat=21.03&lon=105.78&appid=9396f69fee320a0014ac3fa7ab35381d"
+    let apiWeather = "https://api.openweathermap.org/data/2.5/weather?lat=21.03&lon=105.78&appid=9396f69fee320a0014ac3fa7ab35381d"
+    fetch(apiWeather)
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+        if (data.cod != 200) return
+        createMap(data);
+      })
+    fetch(apiForecast)
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+        if (data.cod != 200) return
+        let data1 = processForecastData(data);
+        updateWeatherForecast(data1)
+      })
+
+    //map
+    function createMap(data) {
+      mapboxgl.accessToken =
+        'pk.eyJ1Ijoib2N0b2JvdDEyMyIsImEiOiJjbDM4azYzZnUwMG4zM2psNzA0bDc3NHphIn0.CufIKD4eMfY8zxV8r-ApFg';
+      const map = new mapboxgl.Map({
+        container: 'map', // container ID
+        center: [data.coord.lon, data.coord.lat], // starting position [lng, lat]. Note that lat must be set between -90 and 90
+        zoom: 12 // starting zoom
+      });
+    }
+    //forecast and current weather info
     let forecastList = document.getElementById('forecast-list');
 
-    let datas = [{
-      date: '22/05',
-      dayOfWeek: 'Th 7',
-      icon: 'rain',
-      tempRange: {
-        max: 24,
-        min: 17
+    function processForecastData(data) {
+      let output = []
+      for (let item of data.list) {
+
+        let date = item.dt_txt.split(' ')[0].slice(-5)
+        let time = item.dt_txt.split(' ')[1].slice(0, 5)
+        let dayOfWeek = new Date(date).toLocaleDateString('en-US', {
+          weekday: 'short'
+        })
+        let icon = `${item.weather[0].description.split(' ')[1]}/${item.weather[0].description.split(' ')[0]}`
+        let tempRange = {
+          max: Math.ceil(item.main.temp_max - 273.15),
+          min: Math.floor(item.main.temp_min - 273.15)
+        }
+        output.push({
+          date,
+          time,
+          dayOfWeek,
+          icon,
+          tempRange
+        })
       }
-    }, {
-      date: '23/05',
-      dayOfWeek: 'CN',
-      icon: 'sunny',
-      tempRange: {
-        max: 30,
-        min: 18
+      return output
+    }
+
+
+    function updateWeatherForecast(datas) {
+      let maxTemp = datas.reduce((a, c) => {
+        if (a.tempRange.max > c.tempRange.max) return a
+        else return c
+      }).tempRange.max
+
+      let minTemp = datas.reduce((a, c) => {
+        if (a.tempRange.min < c.tempRange.min) return a
+        else return c
+      }).tempRange.min
+      console.log(maxTemp, minTemp)
+
+      for (let data of datas) {
+        let forecastListItem = document.createElement('div');
+        forecastListItem.classList.add('forecast-list-item');
+
+        let forecastDate = document.createElement('div');
+        forecastDate.classList.add('forecast-date', 'fs-20', 'fw-normal');
+        forecastDate.innerText = data.dayOfWeek + ' ' + data.time;
+        forecastListItem.appendChild(forecastDate);
+
+        let forecastIcon = document.createElement('div');
+        forecastIcon.classList.add('forecast-icon');
+        forecastIcon.innerHTML = `<img src="/images/${data.icon}.svg" alt="">`;
+        forecastListItem.appendChild(forecastIcon);
+
+        let forecastTempRange = document.createElement('div');
+        forecastTempRange.classList.add('forecast-tempRange');
+        let outDiv = document.createElement('div')
+        outDiv.classList.add('out-div')
+        let inDiv = document.createElement('div')
+        inDiv.classList.add('in-div')
+
+        let inW = (data.tempRange.max - data.tempRange.min) / (maxTemp - minTemp) * 100
+        inDiv.style.width = `${inW}% `
+        let inLeft = (data.tempRange.min - minTemp) / (maxTemp - minTemp) * 100
+        inDiv.style.left = `${inLeft}% `
+
+        outDiv.appendChild(inDiv)
+        let div = document.createElement('div')
+        div.classList.add('d-flex', 'align-center')
+        div.style.gap = "8px"
+        let minDiv = document.createElement('div')
+        minDiv.textContent = `${data.tempRange.min}°`
+        div.appendChild(minDiv)
+        div.appendChild(outDiv)
+        let maxDiv = document.createElement('div')
+        maxDiv.textContent = `${data.tempRange.max}°`
+        div.appendChild(maxDiv)
+        forecastTempRange.appendChild(div)
+        forecastListItem.appendChild(forecastTempRange);
+
+        forecastList.appendChild(forecastListItem);
       }
-    }, {
-      date: '24/05',
-      dayOfWeek: "Th 2",
-      icon: 'rain',
-      tempRange: {
-        max: 24,
-        min: 18
-      }
-    }, {
-      date: '25/05',
-      dayOfWeek: "Th 3",
-      icon: 'heavy-rain',
-      tempRange: {
-        max: 22,
-        min: 16
-      }
-    }, {
-      date: '26/05',
-      dayOfWeek: "Th 4",
-      icon: 'rain',
-      tempRange: {
-        max: 24,
-        min: 18
-      }
-    }, {
-      date: '27/05',
-      dayOfWeek: "Th 5",
-      icon: 'cloudy',
-      tempRange: {
-        max: 28,
-        min: 19
-      }
-    }, {
-      date: '28/05',
-      dayOfWeek: "Th 6",
-      icon: 'rain',
-      tempRange: {
-        max: 24,
-        min: 18
-      }
-    }]
-
-    let maxTemp = datas.reduce((a, c) => {
-      if (a.tempRange.max > c.tempRange.max) return a
-      else return c
-    }).tempRange.max
-
-    let minTemp = datas.reduce((a, c) => {
-      if (a.tempRange.min < c.tempRange.min) return a
-      else return c
-    }).tempRange.min
-    // console.log(maxTemp, minTemp)
-
-    for (let data of datas) {
-      let forecastListItem = document.createElement('div');
-      forecastListItem.classList.add('forecast-list-item');
-
-      let forecastDate = document.createElement('div');
-      forecastDate.classList.add('forecast-date');
-      forecastDate.innerText = data.dayOfWeek;
-      forecastListItem.appendChild(forecastDate);
-
-      let forecastIcon = document.createElement('div');
-      forecastIcon.classList.add('forecast-icon');
-      forecastIcon.innerHTML = `<img src="/images/${data.icon}.svg" alt="">`;
-      forecastListItem.appendChild(forecastIcon);
-
-      let forecastTempRange = document.createElement('div');
-      forecastTempRange.classList.add('forecast-tempRange');
-      let outDiv = document.createElement('div')
-      outDiv.classList.add('out-div')
-      let inDiv = document.createElement('div')
-      inDiv.classList.add('in-div')
-      let inW = (data.tempRange.max - data.tempRange.min) / (maxTemp - minTemp) * 100
-      inDiv.style.width = `${inW}%`
-      let inLeft = (data.tempRange.min - minTemp) / (maxTemp - data.tempRange.min) * 100
-      inDiv.style.left = `${inLeft}%`
-
-      outDiv.appendChild(inDiv)
-      let div = document.createElement('div')
-      div.classList.add('d-flex', 'align-center')
-      div.style.gap = "8px"
-      let minDiv = document.createElement('div')
-      minDiv.textContent = `${data.tempRange.min}°`
-      div.appendChild(minDiv)
-      div.appendChild(outDiv)
-      let maxDiv = document.createElement('div')
-      maxDiv.textContent = `${data.tempRange.max}°`
-      div.appendChild(maxDiv)
-      forecastTempRange.appendChild(div)
-      forecastListItem.appendChild(forecastTempRange);
-
-      forecastList.appendChild(forecastListItem);
     }
   </script>
 </body>

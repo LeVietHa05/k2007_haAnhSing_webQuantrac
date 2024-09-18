@@ -56,11 +56,14 @@ main {
 .fs-48 {
   font-size: 48px;
 }
-.fs-16 {
-  font-size: 16px;
+.fs-20 {
+  font-size: 20px;
 }
 .fs-18 {
   font-size: 18px;
+}
+.fs-16 {
+  font-size: 16px;
 }
 .fs-12 {
   font-size: 12px;
@@ -83,7 +86,7 @@ main {
 .w-170 {
   width: 170px;
 }
-.w-100{
+.w-100 {
   width: 100%;
 }
 
@@ -178,7 +181,7 @@ main {
   align-items: center;
 }
 .forecast-date {
-  width: 50px;
+  width: 130px;
 }
 
 .forecast-icon {
