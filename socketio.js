@@ -7,13 +7,16 @@ const option = {
     }
 }
 
+const { log } = require("console");
 // fs sync file envir data
 const fs = require("fs");
 
-const envirData = fs.readFileSync("envirData.json", "utf-8");
+let envirData = fs.readFileSync("envirData.json", "utf-8");
+envirData = JSON.parse(envirData);
 //watch file envir data
 fs.watch("envirData.json", (event, filename) => {
     envirData = fs.readFileSync("envirData.json");
+    envirData = JSON.parse(envirData);
 });
 
 const MAX_DATA_LENGTH = 30;
@@ -46,16 +49,21 @@ io.on("connection", (socket) => {
 
     socket.on("/esp/measure", (data) => {
         console.log(`Received data from ESP32: ${data}`);
-        tmpData.push(data.data);
+        for (let key in data.data) {
+            if (tmpData[key]) {
+                tmpData[key].push(data.data[key]);
+            }
+        }
 
         // calculate average
         if (tmpData.temperature.length == MAX_DATA_LENGTH) {
+            log("Calculating average data");
             for (let key in tmpData) {
                 tmpAvg[key] = tmpData[key].reduce((a, b) => a + b, 0) / tmpData[key].length;
                 tmpData[key] = [];
             }
             let newData = {
-                id: envirData.length,
+                id: envirData.length + 1,
                 date: new Date().toISOString().slice(0, 10),
                 time: new Date().toLocaleTimeString("en-US", { hourCycle: "h24" }),
                 data: {
@@ -65,14 +73,14 @@ io.on("connection", (socket) => {
                     co2: tmpAvg.co2,
                     co: tmpAvg.co,
                 },
-                location: data.location ? data.location : { "latitute": null, "longitute": null },
+                location: data.location ? data.location : { "latitute": null, "longitute": null }
             }
             if (envirData) {
                 envirData.push(newData);
                 fs.writeFileSync("envirData.json", JSON.stringify(envirData));
             }
         }
-        socket.broadcast.emit("web/measure", data)
+        socket.broadcast.emit("/web/measure", data)
     })
 
     socket.on("disconnect", () => {
@@ -84,4 +92,4 @@ io.on("connection", (socket) => {
     });
 });
 
-modules.exports = socketapi;
+module.exports = socketapi;

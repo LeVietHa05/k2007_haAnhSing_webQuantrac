@@ -1,34 +1,66 @@
 [
-  {
-    "id": 1,
-    "date": "2024-01-01",
-    "time": "00:00:00",
-    "data": {
-      "temperature": 20,
-      "humidity": 50,
-      "pressure": 1013,
-      "co2": 400,
-      "co": 0.1
+    {
+        "id": 1,
+        "date": "2024-01-01",
+        "time": "00:00:00",
+        "data": {
+            "temperature": 20,
+            "humidity": 50,
+            "pressure": 1013,
+            "co2": 400,
+            "co": 0.1
+        },
+        "location": {
+            "latitude": 21.01853551557444,
+            "longitude": 105.79870322339669
+        }
     },
-    "location": {
-      "latitude": 21.01853551557444,
-      "longitude": 105.79870322339669
-    }
-  },
-  {
-    "id": 2,
-    "date": "2024-01-01",
-    "time": "00:01:00",
-    "data": {
-      "temperature": 20,
-      "humidity": 50,
-      "pressure": 1013,
-      "co2": 400,
-      "co": 0.1
+    {
+        "id": 2,
+        "date": "2024-01-01",
+        "time": "00:01:00",
+        "data": {
+            "temperature": 20,
+            "humidity": 50,
+            "pressure": 1013,
+            "co2": 400,
+            "co": 0.1
+        },
+        "location": {
+            "latitude": 21.01853551557444,
+            "longitude": 105.79870322339669
+        }
     },
-    "location": {
-      "latitude": 21.01853551557444,
-      "longitude": 105.79870322339669
+    {
+        "id": 3,
+        "date": "2024-08-17",
+        "time": "16:02:01",
+        "data": {
+            "temperature": 25.366666666666667,
+            "humidity": 50.2,
+            "presure": 1005.0666666666667,
+            "co2": 445.3333333333333,
+            "co": 5.166666666666667
+        },
+        "location": {
+            "latitude": 10,
+            "longitude": 104
+        }
+    },
+    {
+        "id": 4,
+        "date": "2024-08-17",
+        "time": "16:02:57",
+        "data": {
+            "temperature": 25.166666666666668,
+            "humidity": 50.86666666666667,
+            "presure": 1005,
+            "co2": 457.53333333333336,
+            "co": 3.8333333333333335
+        },
+        "location": {
+            "latitude": 10,
+            "longitude": 101
+        }
     }
-  }
 ]

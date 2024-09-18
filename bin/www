@@ -7,7 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('haanh-bensing-k2007-aertrix.com:server');
 var http = require('http');
-const socketapi = require('./socketapi')
+const socketapi = require('../socketio')
 
 /**
  * Get port from environment and store in Express.

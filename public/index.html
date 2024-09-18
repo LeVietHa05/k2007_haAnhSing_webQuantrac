@@ -1,13 +1,276 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Express</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
 </head>
 
 <body>
-  <h1>Express</h1>
-  <p>Welcome to Express</p>
+  <main>
+    <div class="d-flex" id="page-header">
+      <div>
+        <img src="/images/curved-chevron-left.svg" alt="Back" style="">
+      </div>
+      <div class="d-flex" style="flex-direction: column;align-items: center;gap: 12px;">
+        <div>Current position</div>
+        <div style="padding: 13px 26px; border-radius: 10px; background: rgba(252, 252, 253, 0.2);">Hanoi, Vietnam</div>
+      </div>
+      <div>
+        <img src="/images/curved-chevron-right.svg" alt="Forward">
+      </div>
+    </div>
+    <div class="d-flex" id="info">
+      <div style="" id="main-weather-info">
+        <div id="info-text" class="d-flex">
+          <div class="d-flex justify-between align-center p-24-0 w-170"
+            style=" border-bottom: 1px solid var(--Gray-200, #e4e7ec);">
+            <div class="color-1 fs-48">21°</div>
+            <div class="fs-18 ">
+              <div>Small rain</div>
+              <div class="fs-16">
+                <span>C:</span><span>24°</span>
+                <span>T:</span><span>18°</span>
+              </div>
+            </div>
+          </div>
+          <div class="fs-18 color-1">Dự báo chung</div>
+          <div class="fs-16 fw-normal lh-24">Mưa phùn nhẹ, trời nhiều mây và se lạnh. Nhiệt độ khoảng 21 độ C, độ ẩm
+            cao. Mưa
+            phùn có thể kéo dài suốt
+            ngày, gây ẩm
+            ướt và trơn trượt.</div>
+        </div>
+        <div id="info-visual" class="d-flex justify-between align-center">
+          <div id="info-visual-img" class="d-flex justify-center align-center">
+            <!-- TODO: img or svg or icon here -->
+            <img src="/images/rain.svg" alt="">
+          </div>
+          <div id="info-visual-place" class="color-1 fw-normal">
+            Hà Nội, 22th5 <img src="/images/edit-icon.svg" alt="">
+          </div>
+          <div id="info-visual-detail" class="d-flex t-center fs-12 lh-18 fw-normal">
+            <div id="info-feellike">
+              <div><img src="/images/sunny-icon.svg" alt=""></div>
+              <div>24°</div>
+              <div>Nhiệt độ cảm nhận</div>
+            </div>
+            <div id="info-rain-pos">
+              <div><img src="/images/rainy-icon.svg" alt=""></div>
+              <div>20%</div>
+              <div>Khả năng có mưa</div>
+            </div>
+            <div id="info-cloud">
+              <div><img src="/images/cloud-icon.svg" alt=""></div>
+              <div>22</div>
+              <div>Độ đục của mây</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="weather-forecast">
+        <div class="chart-header border-1 w-100">Forecast</div>
+        <div id="forecast-list">
+          <!-- <div class="forecast-list-item">
+            <div class="forecast-date"></div>
+            <div class="forecast-icon"></div>
+            <div class="forecast-tempRange">
+              <div style="position: relative;">
+                <div style="position: absolute;"></div>
+              </div>
+            </div>
+          </div> -->
+        </div>
+      </div>
+      <div id="map">
+        <div class="chart-header border-1">map header</div>
+        <div id="map"></div>
+      </div>
+    </div>
+    <div id="charts">
+      <div>
+        <div class="chart-header">Pressure</div>
+        <div><canvas id="presureChart"></canvas></div>
+      </div>
+      <div>
+        <div class="chart-header">Temperature</div>
+        <div><canvas id="temperatureChart"></canvas></div>
+      </div>
+      <div>
+        <div class="chart-header">Humidity</div>
+        <div><canvas id="humidityChart"></canvas></div>
+      </div>
+    </div>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    socket.on('connect', () => {
+      console.log('Connected');
+    });
+
+    socket.on("/web/measure", (data) => {
+      console.log(data);
+    });
+
+    function sendDataTest() {
+      for (let i = 0; i < 30; i++) {
+        socket.emit('/esp/measure', {
+          data:
+          {
+            temperature: random(20, 30),
+            humidity: random(40, 60),
+            presure: random(1000, 1010),
+            co2: random(400, 500),
+            co: random(0, 10),
+          },
+          location: {
+            latitude: random(10, 20),
+            longitude: random(100, 110),
+          }
+        });
+      }
+    }
+    function random(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+  </script>
+  <!-- mapbox -->
+  <script>
+    mapboxgl.accessToken =
+      'pk.eyJ1Ijoib2N0b2JvdDEyMyIsImEiOiJjbDM4azYzZnUwMG4zM2psNzA0bDc3NHphIn0.CufIKD4eMfY8zxV8r-ApFg';
+    const map = new mapboxgl.Map({
+      container: 'map', // container ID
+      center: [-74.5, 40], // starting position [lng, lat]. Note that lat must be set between -90 and 90
+      zoom: 9 // starting zoom
+    });
+  </script>
+  <!-- openweather -->
+  <script>
+    // let api = "https://api.openweathermap.org/data/2.5/forecast?lat=21.03&lon=105.78&appid=9396f69fee320a0014ac3fa7ab35381d"
+    // fetch (api)
+    // .then(res => res.json())
+    // .then(data => {
+    //   console.log(data)
+    // })
+  </script>
+  <script>
+    let forecastList = document.getElementById('forecast-list');
+
+    let datas = [{
+      date: '22/05',
+      dayOfWeek: 'Th 7',
+      icon: 'rain',
+      tempRange: {
+        max: 24,
+        min: 17
+      }
+    }, {
+      date: '23/05',
+      dayOfWeek: 'CN',
+      icon: 'sunny',
+      tempRange: {
+        max: 30,
+        min: 18
+      }
+    }, {
+      date: '24/05',
+      dayOfWeek: "Th 2",
+      icon: 'rain',
+      tempRange: {
+        max: 24,
+        min: 18
+      }
+    }, {
+      date: '25/05',
+      dayOfWeek: "Th 3",
+      icon: 'heavy-rain',
+      tempRange: {
+        max: 22,
+        min: 16
+      }
+    }, {
+      date: '26/05',
+      dayOfWeek: "Th 4",
+      icon: 'rain',
+      tempRange: {
+        max: 24,
+        min: 18
+      }
+    }, {
+      date: '27/05',
+      dayOfWeek: "Th 5",
+      icon: 'cloudy',
+      tempRange: {
+        max: 28,
+        min: 19
+      }
+    }, {
+      date: '28/05',
+      dayOfWeek: "Th 6",
+      icon: 'rain',
+      tempRange: {
+        max: 24,
+        min: 18
+      }
+    }]
+
+    let maxTemp = datas.reduce((a, c) => {
+      if (a.tempRange.max > c.tempRange.max) return a
+      else return c
+    }).tempRange.max
+
+    let minTemp = datas.reduce((a, c) => {
+      if (a.tempRange.min < c.tempRange.min) return a
+      else return c
+    }).tempRange.min
+    // console.log(maxTemp, minTemp)
+
+    for (let data of datas) {
+      let forecastListItem = document.createElement('div');
+      forecastListItem.classList.add('forecast-list-item');
+
+      let forecastDate = document.createElement('div');
+      forecastDate.classList.add('forecast-date');
+      forecastDate.innerText = data.dayOfWeek;
+      forecastListItem.appendChild(forecastDate);
+
+      let forecastIcon = document.createElement('div');
+      forecastIcon.classList.add('forecast-icon');
+      forecastIcon.innerHTML = `<img src="/images/${data.icon}.svg" alt="">`;
+      forecastListItem.appendChild(forecastIcon);
+
+      let forecastTempRange = document.createElement('div');
+      forecastTempRange.classList.add('forecast-tempRange');
+      let outDiv = document.createElement('div')
+      outDiv.classList.add('out-div')
+      let inDiv = document.createElement('div')
+      inDiv.classList.add('in-div')
+      let inW = (data.tempRange.max - data.tempRange.min) / (maxTemp - minTemp) * 100
+      inDiv.style.width = `${inW}%`
+      let inLeft = (data.tempRange.min - minTemp) / (maxTemp - data.tempRange.min) * 100
+      inDiv.style.left = `${inLeft}%`
+
+      outDiv.appendChild(inDiv)
+      let div = document.createElement('div')
+      div.classList.add('d-flex', 'align-center')
+      div.style.gap = "8px"
+      let minDiv = document.createElement('div')
+      minDiv.textContent = `${data.tempRange.min}°`
+      div.appendChild(minDiv)
+      div.appendChild(outDiv)
+      let maxDiv = document.createElement('div')
+      maxDiv.textContent = `${data.tempRange.max}°`
+      div.appendChild(maxDiv)
+      forecastTempRange.appendChild(div)
+      forecastListItem.appendChild(forecastTempRange);
+
+      forecastList.appendChild(forecastListItem);
+    }
+  </script>
 </body>
 
 </html>
