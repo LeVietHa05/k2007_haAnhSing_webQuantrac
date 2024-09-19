@@ -26,63 +26,16 @@
     <div class="d-flex" id="info">
       <div style="" id="main-weather-info">
         <div id="info-text" class="d-flex">
-          <div class="d-flex justify-between align-center p-24-0 w-170"
-            style=" border-bottom: 1px solid var(--Gray-200, #e4e7ec);">
-            <div class="color-1 fs-48">21°</div>
-            <div class="fs-18 ">
-              <div>Small rain</div>
-              <div class="fs-16">
-                <span>C:</span><span>24°</span>
-                <span>T:</span><span>18°</span>
-              </div>
-            </div>
-          </div>
-          <div class="fs-18 color-1">Dự báo chung</div>
-          <div class="fs-16 fw-normal lh-24">Mưa phùn nhẹ, trời nhiều mây và se lạnh. Nhiệt độ khoảng 21 độ C, độ ẩm
-            cao. Mưa
-            phùn có thể kéo dài suốt
-            ngày, gây ẩm
-            ướt và trơn trượt.</div>
+          <!-- to be handle by js -->
         </div>
         <div id="info-visual" class="d-flex justify-between align-center">
-          <div id="info-visual-img" class="d-flex justify-center align-center">
-            <!-- TODO: img or svg or icon here -->
-            <img src="/images/rain.svg" alt="">
-          </div>
-          <div id="info-visual-place" class="color-1 fw-normal">
-            Hà Nội, 22th5 <img src="/images/edit-icon.svg" alt="">
-          </div>
-          <div id="info-visual-detail" class="d-flex t-center fs-12 lh-18 fw-normal">
-            <div id="info-feellike">
-              <div><img src="/images/sunny-icon.svg" alt=""></div>
-              <div>24°</div>
-              <div>Nhiệt độ cảm nhận</div>
-            </div>
-            <div id="info-rain-pos">
-              <div><img src="/images/rainy-icon.svg" alt=""></div>
-              <div>20%</div>
-              <div>Khả năng có mưa</div>
-            </div>
-            <div id="info-cloud">
-              <div><img src="/images/cloud-icon.svg" alt=""></div>
-              <div>22</div>
-              <div>Độ đục của mây</div>
-            </div>
-          </div>
+
         </div>
       </div>
       <div id="weather-forecast">
         <div class="chart-header border-1 w-100">Forecast</div>
         <div id="forecast-list">
-          <!-- <div class="forecast-list-item">
-            <div class="forecast-date"></div>
-            <div class="forecast-icon"></div>
-            <div class="forecast-tempRange">
-              <div style="position: relative;">
-                <div style="position: absolute;"></div>
-              </div>
-            </div>
-          </div> -->
+          <!-- to be handle by js -->
         </div>
       </div>
       <div id="map">
@@ -93,19 +46,21 @@
     <div id="charts">
       <div>
         <div class="chart-header">Pressure</div>
-        <div><canvas id="presureChart"></canvas></div>
+        <div class="canvas-holder"><canvas id="gasChart"></canvas></div>
       </div>
       <div>
-        <div class="chart-header">Temperature</div>
-        <div><canvas id="temperatureChart"></canvas></div>
+        <div class="chart-header">Temperature & Humidity</div>
+        <div class="canvas-holder"><canvas id="tempHumiChart"></canvas></div>
       </div>
       <div>
-        <div class="chart-header">Humidity</div>
-        <div><canvas id="humidityChart"></canvas></div>
+        <div class="chart-header">CO2 & CO</div>
+        <div class="canvas-holder"><canvas id="CO2COchart"></canvas></div>
       </div>
     </div>
   </main>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
   <script>
     const socket = io();
     socket.on('connect', () => {
@@ -121,11 +76,13 @@
         socket.emit('/esp/measure', {
           data:
           {
-            temperature: random(20, 30),
-            humidity: random(40, 60),
-            presure: random(1000, 1010),
-            co2: random(400, 500),
-            co: random(0, 10),
+            TEMP: random(20, 30),
+            HUM: random(40, 60),
+            CO2: random(100, 110),
+            CO: random(120, 170),
+            LPG: random(0, 10),
+            DUST: random(0, 10),
+            CH4: random(0, 10),
           },
           location: {
             latitude: random(10, 20),
@@ -149,6 +106,7 @@
         console.log(data)
         if (data.cod != 200) return
         createMap(data);
+        updateWeater(data);
       })
     fetch(apiForecast)
       .then(res => res.json())
@@ -171,6 +129,60 @@
     }
     //forecast and current weather info
     let forecastList = document.getElementById('forecast-list');
+
+    function updateWeater(data) {
+      let infoText = document.getElementById('info-text');
+      infoText.innerHTML =
+        `<div class="d-flex justify-between align-center p-24-0 w-170"
+            style=" border-bottom: 1px solid var(--Gray-200, #e4e7ec);">
+            <div class="color-1 fs-48">${(data.main.temp - 273.15).toFixed(0)}°</div>
+            <div class="fs-18 ">
+              <div>${data.weather[0].main}</div>
+              <div class="fs-16">
+                C:${(data.main.temp_max - 273.15).toFixed(0)}° T:${(data.main.temp_min - 273.15).toFixed(0)}°
+              </div>
+            </div>
+          </div>
+          <div class="fs-18 color-1">Over all weather</div>
+          <div class="fs-16 fw-normal lh-24">
+          ${data.weather[0].description}
+          </div>
+            `
+
+      let infoVisual = document.getElementById('info-visual');
+      let icon = data.weather[0].description.split(' ')[1] + '/' + data.weather[0].description.split(' ')[0]
+      infoVisual.innerHTML = `<div id="info-visual-img" class="d-flex justify-center align-center">
+            <img src="/images/${icon}.svg" alt="">
+          </div>
+          <div id="info-visual-place" class="color-1 fw-normal">
+            ${data.name} - ${customDate(data.dt)} <img src="/images/edit-icon.svg" alt="">
+          </div>
+          <div id="info-visual-detail" class="d-flex justify-between t-center fs-12 lh-18 fw-normal w-100">
+            <div id="info-feellike">
+              <div><img src="/images/sunny-icon.svg" alt=""></div>
+              <div>${(data.main.feels_like - 273.15).toFixed(0)}°</div>
+              <div>Feels like</div>
+            </div>
+            <div id="info-rain-pos">
+              <div><img src="/images/rainy-icon.svg" alt=""></div>
+              <div>${data.main.humidity}%</div>
+              <div>Humidity</div>
+            </div>
+            <div id="info-cloud">
+              <div><img src="/images/cloud-icon.svg" alt=""></div>
+              <div>${data.wind.speed}</div>
+              <div>Wind speed</div>
+            </div>
+          </div>`
+    }
+
+    function customDate(timestamp) {
+      let date = new Date(timestamp * 1000);
+      return date.toLocaleDateString('en-US', {
+        day: "numeric",
+        month: "short",
+      })
+    }
 
     function processForecastData(data) {
       let output = []
@@ -196,7 +208,6 @@
       }
       return output
     }
-
 
     function updateWeatherForecast(datas) {
       let maxTemp = datas.reduce((a, c) => {
@@ -253,6 +264,92 @@
         forecastList.appendChild(forecastListItem);
       }
     }
+
+    //chart
+    let chartIDs = ['gasChart', 'tempHumiChart', 'CO2COchart']
+    let chartLabels = [['LPG', 'CH4'], ['TEMP', 'HUM', 'DUST'], ['CO2', 'CO']]
+    let chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            display: false,
+          },
+          grid: {
+            display: false,
+          },
+          label: {
+            display: false,
+          }
+        },
+        x: {
+          ticks: {
+            maxRotation: 90,
+            minRotation: 0
+          },
+          grid: {
+            display: false,
+          }
+        }
+      },
+
+      plugins: {
+        legend: {
+          display: false
+        },
+        datalabels: {
+          anchor: 'center',
+          align: 'top',
+          offset: "1",
+          color: "#9e77ed",
+          font: {
+            size: 12,
+          },
+        }
+      },
+      tooltips: {
+        enabled: true, // Enable tooltips on hover
+        callbacks: {
+          label: function (tooltipItem, data) {
+            return tooltipItem.yLabel; // Show the y-axis value in the tooltip
+          }
+        }
+      }
+    }
+    let charts = []
+    function genChart() {
+      fetch("/chartdata")
+        .then(res => res.json())
+        .then(data => {
+          console.log(data)
+          let labels = data.map(item => item.time.slice(0, 5))
+
+          for (let i = 0; i < 3; i++) {
+            let ctx = document.getElementById(chartIDs[i]).getContext('2d');
+            let chart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: labels,
+                datasets: chartLabels[i].map(label => {
+                  return {
+                    label: label,
+                    data: data.map(item => item.data[label]),
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                  }
+                })
+              },
+              options: chartOptions,
+              plugins: [ChartDataLabels]
+            });
+            charts.push(chart)
+          }
+        })
+    }
+    genChart();
   </script>
 </body>
 

@@ -22,19 +22,23 @@ fs.watch("envirData.json", (event, filename) => {
 const MAX_DATA_LENGTH = 30;
 
 const tmpData = {
-    temperature: [],
-    humidity: [],
-    presure: [],
-    co2: [],
-    co: [],
+    TEMP: [],
+    HUM: [],
+    CO2: [],
+    CO: [],
+    LPG: [],
+    CH4: [],
+    DUST: [],
 }
 
 let tmpAvg = {
-    temperature: 0,
-    humidity: 0,
-    presure: 0,
-    co2: 0,
-    co: 0,
+    TEMP: 0,
+    HUM: 0,
+    CO2: 0,
+    CO: 0,
+    LPG: 0,
+    CH4: 0,
+    DUST: 0,
 }
 
 const io = require("socket.io")(option);
@@ -56,10 +60,11 @@ io.on("connection", (socket) => {
         }
 
         // calculate average
-        if (tmpData.temperature.length == MAX_DATA_LENGTH) {
+        if (tmpData.TEMP.length == MAX_DATA_LENGTH) {
             log("Calculating average data");
             for (let key in tmpData) {
                 tmpAvg[key] = tmpData[key].reduce((a, b) => a + b, 0) / tmpData[key].length;
+                tmpAvg[key] = Math.round(tmpAvg[key] * 100) / 100;
                 tmpData[key] = [];
             }
             let newData = {
@@ -67,11 +72,13 @@ io.on("connection", (socket) => {
                 date: new Date().toISOString().slice(0, 10),
                 time: new Date().toLocaleTimeString("en-US", { hourCycle: "h24" }),
                 data: {
-                    temperature: tmpAvg.temperature,
-                    humidity: tmpAvg.humidity,
-                    presure: tmpAvg.presure,
-                    co2: tmpAvg.co2,
-                    co: tmpAvg.co,
+                    TEMP: tmpAvg.TEMP,
+                    HUM: tmpAvg.HUM,
+                    CO2: tmpAvg.CO2,
+                    CO: tmpAvg.CO,
+                    LPG: tmpAvg.LPG,
+                    CH4: tmpAvg.CH4,
+                    DUST: tmpAvg.DUST
                 },
                 location: data.location ? data.location : { "latitute": null, "longitute": null }
             }
@@ -92,4 +99,4 @@ io.on("connection", (socket) => {
     });
 });
 
-module.exports = socketapi;
+module.exports = { socketapi, envirData };

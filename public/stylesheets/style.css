@@ -238,3 +238,13 @@ main {
 .chart-header {
   padding: 8px;
 }
+.canvas-holder {
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid var(--Error-300, #fda29b);
+  background: linear-gradient(0deg, #b7ebc9 -5.62%, #e1faeb 100%);
+}
+
+canvas {
+  border-radius: 20px;
+}
