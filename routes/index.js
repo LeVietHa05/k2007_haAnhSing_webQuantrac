@@ -8,7 +8,11 @@ router.get('/', function (req, res, next) {
 });
 
 router.get("/chartdata", (req, res) => {
-  res.json(envirData);
+  if (envirData.length > 10) {
+    return res.json(envirData.slice(envirData.length - 10));
+  } else {
+    return res.json(envirData);
+  }
 });
 
 module.exports = router;
