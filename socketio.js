@@ -51,11 +51,11 @@ const socketapi = {
 io.on("connection", (socket) => {
     console.log("A user connected");
 
-    socket.on("/esp/measure", (data) => {
+    socket.on("message", (data) => {
         console.log(`Received data from ESP32: ${data}`);
-        for (let key in data.data) {
+        for (let key in data) {
             if (tmpData[key]) {
-                tmpData[key].push(data.data[key]);
+                tmpData[key].push(data[key]);
             }
         }
 

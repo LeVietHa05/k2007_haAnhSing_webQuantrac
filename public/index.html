@@ -45,11 +45,11 @@
     </div>
     <div id="charts">
       <div>
-        <div class="chart-header">Pressure</div>
+        <div class="chart-header">Gas</div>
         <div class="canvas-holder"><canvas id="gasChart"></canvas></div>
       </div>
       <div>
-        <div class="chart-header">Temperature & Humidity</div>
+        <div class="chart-header">Temperature & Humidity & Dust</div>
         <div class="canvas-holder"><canvas id="tempHumiChart"></canvas></div>
       </div>
       <div>
@@ -69,12 +69,32 @@
 
     socket.on("/web/measure", (data) => {
       console.log(data);
+      charts[0].data.labels.push(getCurTime());
+      addData(charts[0], [data.LPG, data.CH4]);
+      addData(charts[1], [data.TEMP, data.HUM, data.DUST]);
+      addData(charts[2], [data.CO2, data.CO]);
+      if (charts[0].data.labels.length > 10) {
+        charts[0].data.labels.shift();
+        removeData(charts[0]);
+        removeData(charts[1]);
+        removeData(charts[2]);
+      }
     });
 
-    function sendDataTest() {
-      for (let i = 0; i < 30; i++) {
-        socket.emit('/esp/measure', {
-          data:
+    function getCurTime() {
+      let date = new Date();
+      return date.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    function sendDataTest(time) {
+      let i = 0;
+      let id = setInterval(() => {
+        i++;
+        socket.emit('message',
           {
             TEMP: random(20, 30),
             HUM: random(40, 60),
@@ -83,13 +103,11 @@
             LPG: random(0, 10),
             DUST: random(0, 10),
             CH4: random(0, 10),
-          },
-          location: {
-            latitude: random(10, 20),
-            longitude: random(100, 110),
-          }
-        });
-      }
+          });
+        if (i == time) {
+          clearInterval(id);
+        }
+      }, 1000);
     }
     function random(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
@@ -350,6 +368,19 @@
         })
     }
     genChart();
+
+    function addData(chart /*Chart*/, newData/* array*/) {
+      chart.data.datasets.forEach((dataset, i) => {
+        dataset.data.push(newData[i]);
+      });
+      chart.update();
+    }
+    function removeData(chart) {
+      chart.data.datasets.forEach((dataset) => {
+        dataset.data.shift();
+      });
+      chart.update();
+    }
   </script>
 </body>
 
