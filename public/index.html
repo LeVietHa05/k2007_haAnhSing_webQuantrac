@@ -17,7 +17,7 @@
       </div>
       <div class="d-flex" style="flex-direction: column;align-items: center;gap: 12px;">
         <div>Current position</div>
-        <div style="padding: 13px 26px; border-radius: 10px; background: rgba(252, 252, 253, 0.2);">Hanoi, Vietnam</div>
+        <div style="padding: 13px 26px; border-radius: 10px; background: rgba(252, 252, 253, 0.2);">Victoria School, Singapore</div>
       </div>
       <div>
         <img src="/images/curved-chevron-right.svg" alt="Forward">
@@ -68,7 +68,7 @@
     });
 
     socket.on("/web/measure", (data) => {
-      console.log(data);
+      console.log(data);              
       charts[0].data.labels.push(getCurTime());
       addData(charts[0], [data.LPG, data.CH4]);
       addData(charts[1], [data.TEMP, data.HUM, data.DUST]);
@@ -115,9 +115,9 @@
   </script>
   <!-- code -->
   <script>
-    // openweather data
-    let apiForecast = "https://api.openweathermap.org/data/2.5/forecast?lat=21.03&lon=105.78&appid=9396f69fee320a0014ac3fa7ab35381d"
-    let apiWeather = "https://api.openweathermap.org/data/2.5/weather?lat=21.03&lon=105.78&appid=9396f69fee320a0014ac3fa7ab35381d"
+    // openweather data 1.3087922732696344, 103.92804716511142
+    let apiForecast = "https://api.openweathermap.org/data/2.5/forecast?lat=1.30874&lon=103.92808&appid=9396f69fee320a0014ac3fa7ab35381d"
+    let apiWeather = "https://api.openweathermap.org/data/2.5/weather?lat=1.3087&lon=103.9280&appid=9396f69fee320a0014ac3fa7ab35381d"
     fetch(apiWeather)
       .then(res => res.json())
       .then(data => {
