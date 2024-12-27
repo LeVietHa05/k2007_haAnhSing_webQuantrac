@@ -26,8 +26,8 @@ const tmpData = {
     HUM: [],
     CO2: [],
     CO: [],
-    LPG: [],
-    CH4: [],
+    SPO2: [],
+    HEART: [],
     DUST: [],
 }
 
@@ -36,8 +36,8 @@ let tmpAvg = {
     HUM: 0,
     CO2: 0,
     CO: 0,
-    LPG: 0,
-    CH4: 0,
+    SPO2: 0,
+    HEART: 0,
     DUST: 0,
 }
 
@@ -76,8 +76,8 @@ io.on("connection", (socket) => {
                     HUM: tmpAvg.HUM,
                     CO2: tmpAvg.CO2,
                     CO: tmpAvg.CO,
-                    LPG: tmpAvg.LPG,
-                    CH4: tmpAvg.CH4,
+                    SPO2: tmpAvg.SPO2,
+                    HEART: tmpAvg.HEART,
                     DUST: tmpAvg.DUST
                 },
                 location: data.location ? data.location : { "latitute": null, "longitute": null }
